@@ -14,6 +14,8 @@ import org.bson.Document;
 
 import java.util.Arrays;
 
+import static com.mongodb.client.model.Filters.*;
+
 public class App {
 
     public static void main(String[] args){
@@ -29,14 +31,25 @@ public class App {
         MongoClient mongoClient = new MongoClient(  Arrays.asList(
                 new ServerAddress("cluster0-shard-00-00-eos78.mongodb.net", 27017),
                 new ServerAddress("cluster0-shard-00-01-eos78.mongodb.net", 27017),
-                new ServerAddress(" cluster0-shard-00-02-eos78.mongodb.net", 27017)),
+                new ServerAddress("cluster0-shard-00-02-eos78.mongodb.net", 27017)),
                 Arrays.asList(credential),
                 options);
 
         MongoDatabase database = mongoClient.getDatabase("test");
         MongoCollection<Document> coll = database.getCollection("restaurants");
 
-        MongoCursor<Document> iterator = coll.find().iterator();
+
+
+        Document document = new Document("borough", "Poznań")
+                .append("cuisine", "Drinks")
+                .append("name", "Polskie Napoje")
+                .append("grades", Arrays.asList(new Document("grade", "A"), new Document("score",60)))
+        ;
+
+        coll.insertOne(document);
+
+
+        MongoCursor<Document> iterator = coll.find(eq("borough", "Poznań")).iterator();
 
         while (iterator.hasNext() ){
             String json = iterator.next().toJson();
